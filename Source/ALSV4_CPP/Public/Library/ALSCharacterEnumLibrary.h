@@ -107,7 +107,8 @@ UENUM(BlueprintType)
 enum class EALSViewMode : uint8
 {
 	ThirdPerson,
-	FirstPerson
+	FirstPerson,
+	TopDown
 };
 
 UENUM(BlueprintType)

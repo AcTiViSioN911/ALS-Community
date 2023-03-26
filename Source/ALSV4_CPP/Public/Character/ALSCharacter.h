@@ -38,6 +38,8 @@ public:
 
 	virtual FTransform GetThirdPersonPivotTarget() override;
 
+	virtual FTransform GetTopDownPivotTarget() override;
+
 	virtual FVector GetFirstPersonCameraTarget() override;
 
 protected:
@@ -46,6 +48,11 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void OnOverlayStateChanged(EALSOverlayState PreviousState) override;
+
+	virtual void OnViewModeChanged(EALSViewMode PreviousViewMode) override;
+	
+	void EnableCursor(bool bEnable);
+	void UpdateAimMovement(float DeltaTime);
 
 	/** Implement on BP to update animation states of held objects */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "ALS|HeldObject")
@@ -63,4 +70,7 @@ public:
 
 private:
 	bool bNeedsColorReset = false;
+
+	UPROPERTY()
+	APlayerController* PlayerController;
 };

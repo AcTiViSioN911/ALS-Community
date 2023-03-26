@@ -39,7 +39,7 @@ public:
 	{
 		return MyCharacterMovementComponent;
 	}
-
+	
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void BeginPlay() override;
@@ -271,6 +271,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ALS|Camera System")
 	virtual FTransform GetThirdPersonPivotTarget();
 
+	UFUNCTION(BlueprintCallable, Category="ALS|Camera System")
+	virtual FTransform GetTopDownPivotTarget();
+
+	UFUNCTION(BlueprintCallable, Category = "ALS|Camera System")
+	virtual FTransform GetCurrentPivotTarget();
+	FRotator GetCurrentCameraControlRotation() const;
+
 	UFUNCTION(BlueprintCallable, Category = "ALS|Camera System")
 	virtual FVector GetFirstPersonCameraTarget();
 
@@ -279,6 +286,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ALS|Camera System")
 	void SetCameraBehavior(UALSPlayerCameraBehavior* CamBeh) { CameraBehavior = CamBeh; }
+
+	UFUNCTION(BlueprintCallable, Category = "ALS|Camera System")
+	bool CanPlayCameraShake() const;
 
 	/** Essential Information Getters/Setters */
 
@@ -457,6 +467,12 @@ protected:
 	float FirstPersonFOV = 90.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ALS|Camera System")
+	FVector TopDownPivotOffset = FVector::ZeroVector;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ALS|Camera System")
+	FRotator TopDownCameraRotation = FRotator::ZeroRotator;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ALS|Camera System")
 	bool bRightShoulder = false;
 
 	/** Movement System */
@@ -609,6 +625,12 @@ protected:
 	/** Last time the 'first' crouch/roll button is pressed */
 	float LastStanceInputTime = 0.0f;
 
+	/** Last forward input action pressed */
+	float LastForwardInput = 0.0f; 
+
+	/** Last right input action pressed */
+	float LastRightInput = 0.0f;
+	
 	/* Timer to manage reset of braking friction factor after on landed event */
 	FTimerHandle OnLandedFrictionResetTimer;
 

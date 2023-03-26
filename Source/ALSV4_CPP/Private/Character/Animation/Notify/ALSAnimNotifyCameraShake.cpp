@@ -4,13 +4,15 @@
 
 #include "Character/Animation/Notify/ALSAnimNotifyCameraShake.h"
 
+#include "Character/ALSBaseCharacter.h"
+
 
 void UALSAnimNotifyCameraShake::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	APawn* OwnerPawn = Cast<APawn>(MeshComp->GetOwner());
-	if (OwnerPawn)
+	AALSBaseCharacter* OwnerPawn = Cast<AALSBaseCharacter>(MeshComp->GetOwner());
+	if (IsValid(OwnerPawn) && OwnerPawn->CanPlayCameraShake())
 	{
 		APlayerController* OwnerController = Cast<APlayerController>(OwnerPawn->GetController());
 		if (OwnerController)

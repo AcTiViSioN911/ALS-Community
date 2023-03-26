@@ -196,13 +196,14 @@ bool UALSCharacterAnimInstance::ShouldMoveCheck() const
 bool UALSCharacterAnimInstance::CanRotateInPlace() const
 {
 	return RotationMode.Aiming() ||
-		CharacterInformation.ViewMode == EALSViewMode::FirstPerson;
+		CharacterInformation.ViewMode == EALSViewMode::FirstPerson ||
+		CharacterInformation.ViewMode == EALSViewMode::TopDown;
 }
 
 bool UALSCharacterAnimInstance::CanTurnInPlace() const
 {
 	return RotationMode.LookingDirection() &&
-		CharacterInformation.ViewMode == EALSViewMode::ThirdPerson &&
+		(CharacterInformation.ViewMode == EALSViewMode::ThirdPerson) &&
 		GetCurveValue(NAME_Enable_Transition) >= 0.99f;
 }
 

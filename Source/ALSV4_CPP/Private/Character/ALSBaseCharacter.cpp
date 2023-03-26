@@ -638,6 +638,35 @@ FTransform AALSBaseCharacter::GetThirdPersonPivotTarget()
 	return GetActorTransform();
 }
 
+FTransform AALSBaseCharacter::GetTopDownPivotTarget()
+{
+	return GetActorTransform();
+}
+
+FTransform AALSBaseCharacter::GetCurrentPivotTarget()
+{
+	if (ViewMode == EALSViewMode::ThirdPerson)
+	{
+		return GetThirdPersonPivotTarget();
+	}
+	if (ViewMode == EALSViewMode::TopDown)
+	{
+		return GetTopDownPivotTarget();
+	}
+
+	return GetActorTransform();
+}
+
+FRotator AALSBaseCharacter::GetCurrentCameraControlRotation() const
+{
+	if (ViewMode == EALSViewMode::TopDown)
+	{
+		return TopDownCameraRotation;
+	}
+
+	return GetControlRotation();
+}
+
 FVector AALSBaseCharacter::GetFirstPersonCameraTarget()
 {
 	return GetMesh()->GetSocketLocation(NAME_FP_Camera);
@@ -648,6 +677,11 @@ void AALSBaseCharacter::GetCameraParameters(float& TPFOVOut, float& FPFOVOut, bo
 	TPFOVOut = ThirdPersonFOV;
 	FPFOVOut = FirstPersonFOV;
 	bRightShoulderOut = bRightShoulder;
+}
+
+bool AALSBaseCharacter::CanPlayCameraShake() const
+{
+	return ViewMode != EALSViewMode::TopDown;
 }
 
 void AALSBaseCharacter::RagdollUpdate(float DeltaTime)
@@ -854,7 +888,7 @@ void AALSBaseCharacter::OnGaitChanged(const EALSGait PreviousGait)
 
 void AALSBaseCharacter::OnViewModeChanged(const EALSViewMode PreviousViewMode)
 {
-	if (ViewMode == EALSViewMode::ThirdPerson)
+	if (ViewMode == EALSViewMode::ThirdPerson || ViewMode == EALSViewMode::TopDown)
 	{
 		if (RotationMode == EALSRotationMode::VelocityDirection || RotationMode == EALSRotationMode::LookingDirection)
 		{
@@ -1089,7 +1123,13 @@ void AALSBaseCharacter::UpdateGroundedRotation(float DeltaTime)
 		// Rolling Rotation (Not allowed on networked games)
 		if (!bEnableNetworkOptimizations && bHasMovementInput)
 		{
-			SmoothCharacterRotation({0.0f, LastMovementInputRotation.Yaw, 0.0f}, 0.0f, 2.0f, DeltaTime);
+			/*UE_LOG(LogTemp, Warning, TEXT("Yaw: %f Pitch %f | Forward %s Right %s"),
+				MovementInputYaw, MovementInputPitch, *InputForwardVector.ToString(), *InputRightVector.ToString());*/
+			
+			SmoothCharacterRotation(
+				{0.0f, LastMovementInputRotation.Yaw, 0.0f},
+				0.0f, 2.0f, DeltaTime
+			);
 		}
 	}
 
@@ -1207,8 +1247,13 @@ void AALSBaseCharacter::ForwardMovementAction_Implementation(float Value)
 {
 	if (MovementState == EALSMovementState::Grounded || MovementState == EALSMovementState::InAir)
 	{
+		// Get the Yaw Rotation based on the View Mode
+		const float YawRotation = ViewMode == EALSViewMode::TopDown ? 1.0f : AimingRotation.Yaw;
+		
 		// Default camera relative movement behavior
-		const FRotator DirRotator(0.0f, AimingRotation.Yaw, 0.0f);
+		LastForwardInput = Value;
+		UE_LOG(LogTemp, Warning, TEXT("ForwardMovementAction_Implementation: %f"), Value);
+		const FRotator DirRotator(0.0f, YawRotation, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(DirRotator), Value);
 	}
 }
@@ -1217,20 +1262,29 @@ void AALSBaseCharacter::RightMovementAction_Implementation(float Value)
 {
 	if (MovementState == EALSMovementState::Grounded || MovementState == EALSMovementState::InAir)
 	{
+		const float YawRotation = ViewMode == EALSViewMode::TopDown ? -1.0f : AimingRotation.Yaw;
+
 		// Default camera relative movement behavior
-		const FRotator DirRotator(0.0f, AimingRotation.Yaw, 0.0f);
+		LastRightInput = Value;
+		const FRotator DirRotator(0.0f, YawRotation, 0.0f);
 		AddMovementInput(UKismetMathLibrary::GetRightVector(DirRotator), Value);
 	}
 }
 
 void AALSBaseCharacter::CameraUpAction_Implementation(float Value)
 {
-	AddControllerPitchInput(LookUpDownRate * Value);
+	if (GetViewMode() != EALSViewMode::TopDown)
+	{
+		AddControllerPitchInput(LookUpDownRate * Value);
+	}
 }
 
 void AALSBaseCharacter::CameraRightAction_Implementation(float Value)
 {
-	AddControllerYawInput(LookLeftRightRate * Value);
+	if (GetViewMode() != EALSViewMode::TopDown)
+	{
+		AddControllerYawInput(LookLeftRightRate * Value);
+	}
 }
 
 void AALSBaseCharacter::JumpAction_Implementation(bool bValue)
@@ -1343,6 +1397,19 @@ void AALSBaseCharacter::StanceAction_Implementation()
 	if (LastStanceInputTime - PrevStanceInputTime <= RollDoubleTapTimeout)
 	{
 		// Roll
+		if (bHasMovementInput)
+		{
+			float MovementInputYaw, MovementInputPitch;
+			const FVector InputForwardVector = UKismetMathLibrary::GetForwardVector(GetControlRotation()) * LastForwardInput;
+			const FVector InputRightVector = UKismetMathLibrary::GetRightVector(GetControlRotation()) * LastRightInput;
+			UKismetMathLibrary::GetYawPitchFromVector(
+				GetCharacterMovement()->GetLastInputVector(), MovementInputYaw,MovementInputPitch
+			);
+			FRotator RollRotator = GetActorRotation();
+			RollRotator.Yaw = MovementInputYaw;
+			SetActorRotation(RollRotator);
+		}
+		
 		Replicated_PlayMontage(GetRollAnimation(), 1.15f);
 
 		if (Stance == EALSStance::Standing)

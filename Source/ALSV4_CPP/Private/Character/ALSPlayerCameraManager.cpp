@@ -56,7 +56,7 @@ void AALSPlayerCameraManager::OnPossess(AALSBaseCharacter* NewCharacter)
 	}
 
 	// Initial position
-	const FVector& TPSLoc = ControlledCharacter->GetThirdPersonPivotTarget().GetLocation();
+	const FVector& TPSLoc = ControlledCharacter->GetCurrentPivotTarget().GetLocation();
 	SetActorLocation(TPSLoc);
 	SmoothedPivotTarget.SetLocation(TPSLoc);
 
@@ -127,8 +127,7 @@ bool AALSPlayerCameraManager::CustomCameraBehavior(float DeltaTime, FVector& Loc
 		return false;
 	}
 
-	// Step 1: Get Camera Parameters from CharacterBP via the Camera Interface
-	const FTransform& PivotTarget = ControlledCharacter->GetThirdPersonPivotTarget();
+	const FTransform& PivotTarget = ControlledCharacter->GetCurrentPivotTarget();
 	const FVector& FPTarget = ControlledCharacter->GetFirstPersonCameraTarget();
 	float TPFOV = 90.0f;
 	float FPFOV = 90.0f;
@@ -137,7 +136,7 @@ bool AALSPlayerCameraManager::CustomCameraBehavior(float DeltaTime, FVector& Loc
 
 	// Step 2: Calculate Target Camera Rotation. Use the Control Rotation and interpolate for smooth camera rotation.
 	const FRotator& InterpResult = FMath::RInterpTo(GetCameraRotation(),
-	                                                GetOwningPlayerController()->GetControlRotation(), DeltaTime,
+	                                                ControlledCharacter->GetCurrentCameraControlRotation(), DeltaTime,
 	                                                GetCameraBehaviorParam(NAME_RotationLagSpeed));
 
 	TargetCameraRotation = UKismetMathLibrary::RLerp(InterpResult, DebugViewRotation,

@@ -84,10 +84,17 @@ ECollisionChannel AALSCharacter::GetThirdPersonTraceParams(FVector& TraceOrigin,
 }
 
 FTransform AALSCharacter::GetThirdPersonPivotTarget()
-{
+{	
 	return FTransform(GetActorRotation(),
 	                  (GetMesh()->GetSocketLocation(TEXT("Head")) + GetMesh()->GetSocketLocation(TEXT("root"))) / 2.0f,
 	                  FVector::OneVector);
+}
+
+FTransform AALSCharacter::GetTopDownPivotTarget()
+{
+	return FTransform(GetActorRotation(),
+					  (GetMesh()->GetSocketLocation(TEXT("Head")) + TopDownPivotOffset),
+					  FVector::OneVector);
 }
 
 FVector AALSCharacter::GetFirstPersonCameraTarget()
@@ -101,8 +108,64 @@ void AALSCharacter::OnOverlayStateChanged(EALSOverlayState PreviousState)
 	UpdateHeldObject();
 }
 
+void AALSCharacter::OnViewModeChanged(EALSViewMode PreviousViewMode)
+{
+	Super::OnViewModeChanged(PreviousViewMode);
+
+	if (ViewMode == EALSViewMode::TopDown)
+	{
+		EnableCursor(true);
+	}
+	else
+	{
+		EnableCursor(false);		
+	}
+}
+
+void AALSCharacter::EnableCursor(bool bEnable)
+{
+	if (!PlayerController)
+	{
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("EanbleCursor: %s"), bEnable ? TEXT("true") : TEXT("false"));
+
+	PlayerController->bShowMouseCursor = bEnable;
+	PlayerController->bEnableClickEvents = bEnable;
+	PlayerController->bEnableMouseOverEvents = bEnable;
+}
+
+void AALSCharacter::UpdateAimMovement(float DeltaTime)
+{
+	if (!PlayerController || GetViewMode() != EALSViewMode::TopDown)
+	{
+		return;
+	}
+	
+	FVector MouseWorldLocation, MouseWorldDirection;
+	const bool SuccessConvert = PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation, MouseWorldDirection);
+
+	if (SuccessConvert)
+	{
+		// Find intersect point with plane originating on actor 
+		FVector ActorLocation = GetActorLocation();
+		FVector AimTargetLocation = FMath::LinePlaneIntersection(
+					MouseWorldLocation, 
+					MouseWorldLocation + (MouseWorldDirection * 10000.f), 
+					ActorLocation, 
+					FVector{ 0.f, 0.f, 1.f });
+
+		// Change actor's yaw rotation
+		FRotator ActorRotation = GetActorRotation();
+		ActorRotation.Yaw = (AimTargetLocation - ActorLocation).Rotation().Yaw;
+		PlayerController->SetControlRotation(ActorRotation);
+	}
+}
+
 void AALSCharacter::Tick(float DeltaTime)
 {
+	UpdateAimMovement(DeltaTime);
+	
 	Super::Tick(DeltaTime);
 
 	UpdateHeldObjectAnimations();
@@ -111,6 +174,13 @@ void AALSCharacter::Tick(float DeltaTime)
 void AALSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	PlayerController = Cast<APlayerController>(GetController());
+
+	if (ViewMode == EALSViewMode::TopDown)
+	{
+		EnableCursor(true);
+	}
 
 	UpdateHeldObject();
 }
