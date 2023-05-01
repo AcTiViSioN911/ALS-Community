@@ -587,6 +587,25 @@ FVector AALSBaseCharacter::GetMovementInput() const
 	return ReplicatedCurrentAcceleration;
 }
 
+void AALSBaseCharacter::RollStart()
+{
+	// Roll
+	if (bHasMovementInput)
+	{
+		float MovementInputYaw, MovementInputPitch;
+		const FVector InputForwardVector = UKismetMathLibrary::GetForwardVector(GetControlRotation()) * LastForwardInput;
+		const FVector InputRightVector = UKismetMathLibrary::GetRightVector(GetControlRotation()) * LastRightInput;
+		UKismetMathLibrary::GetYawPitchFromVector(
+			GetCharacterMovement()->GetLastInputVector(), MovementInputYaw,MovementInputPitch
+		);
+		FRotator RollRotator = GetActorRotation();
+		RollRotator.Yaw = MovementInputYaw;
+		SetActorRotation(RollRotator);
+	}
+		
+	Replicated_PlayMontage(GetRollAnimation(), 1.15f);
+}
+
 float AALSBaseCharacter::GetAnimCurveValue(FName CurveName) const
 {
 	if (GetMesh()->GetAnimInstance())
@@ -983,6 +1002,7 @@ void AALSBaseCharacter::SetEssentialValues(float DeltaTime)
 	{
 		ReplicatedCurrentAcceleration = GetCharacterMovement()->GetCurrentAcceleration();
 		ReplicatedControlRotation = GetControlRotation();
+		ReplicatedControlRotation.Pitch = 0;
 		EasedMaxAcceleration = GetCharacterMovement()->GetMaxAcceleration();
 	}
 	else
@@ -1273,17 +1293,31 @@ void AALSBaseCharacter::RightMovementAction_Implementation(float Value)
 
 void AALSBaseCharacter::CameraUpAction_Implementation(float Value)
 {
+	LastCameraUpInput = Value;
+
 	if (GetViewMode() != EALSViewMode::TopDown)
 	{
 		AddControllerPitchInput(LookUpDownRate * Value);
+	}
+	else
+	{
+		FVector CameraVector = FVector(LastCameraUpInput, LastCameraRightInput, 0.0f);
+		GetController()->SetControlRotation(UKismetMathLibrary::MakeRotFromX(CameraVector));
 	}
 }
 
 void AALSBaseCharacter::CameraRightAction_Implementation(float Value)
 {
+	LastCameraRightInput = Value;
+	
 	if (GetViewMode() != EALSViewMode::TopDown)
 	{
 		AddControllerYawInput(LookLeftRightRate * Value);
+	}
+	else
+	{
+		FVector CameraVector = FVector(LastCameraUpInput, LastCameraRightInput, 0.0f);
+		GetController()->SetControlRotation(UKismetMathLibrary::MakeRotFromX(CameraVector));
 	}
 }
 
@@ -1396,22 +1430,9 @@ void AALSBaseCharacter::StanceAction_Implementation()
 
 	if (LastStanceInputTime - PrevStanceInputTime <= RollDoubleTapTimeout)
 	{
-		// Roll
-		if (bHasMovementInput)
-		{
-			float MovementInputYaw, MovementInputPitch;
-			const FVector InputForwardVector = UKismetMathLibrary::GetForwardVector(GetControlRotation()) * LastForwardInput;
-			const FVector InputRightVector = UKismetMathLibrary::GetRightVector(GetControlRotation()) * LastRightInput;
-			UKismetMathLibrary::GetYawPitchFromVector(
-				GetCharacterMovement()->GetLastInputVector(), MovementInputYaw,MovementInputPitch
-			);
-			FRotator RollRotator = GetActorRotation();
-			RollRotator.Yaw = MovementInputYaw;
-			SetActorRotation(RollRotator);
-		}
+		// Double tap
+		RollStart();
 		
-		Replicated_PlayMontage(GetRollAnimation(), 1.15f);
-
 		if (Stance == EALSStance::Standing)
 		{
 			SetDesiredStance(EALSStance::Crouching);

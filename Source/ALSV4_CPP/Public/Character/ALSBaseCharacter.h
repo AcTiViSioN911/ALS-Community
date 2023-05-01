@@ -5,6 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ModularCharacter.h"
 #include "Components/TimelineComponent.h"
 #include "Library/ALSCharacterEnumLibrary.h"
 #include "Library/ALSCharacterStructLibrary.h"
@@ -27,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRagdollStateChangedSignature, bool,
  * Base character class
  */
 UCLASS(BlueprintType)
-class ALSV4_CPP_API AALSBaseCharacter : public ACharacter
+class ALSV4_CPP_API AALSBaseCharacter : public AModularCharacter
 {
 	GENERATED_BODY()
 
@@ -245,6 +246,9 @@ public:
 	/** Implement on BP to get required roll animation according to character's state */
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "ALS|Movement System")
 	UAnimMontage* GetRollAnimation();
+
+	UFUNCTION(BlueprintCallable, Category = "ALS|Character States")
+	void RollStart();
 
 	/** Utility */
 
@@ -630,6 +634,10 @@ protected:
 
 	/** Last right input action pressed */
 	float LastRightInput = 0.0f;
+
+	float LastCameraUpInput = 0.0f;
+
+	float LastCameraRightInput = 0.0f;
 	
 	/* Timer to manage reset of braking friction factor after on landed event */
 	FTimerHandle OnLandedFrictionResetTimer;

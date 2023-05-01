@@ -118,5 +118,8 @@ public:
 	TObjectPtr<UInputMappingContext> DefaultInputMappingContext = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ALS|Input")
+	TObjectPtr<UInputMappingContext> GamepadInputMappingContext = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ALS|Input")
 	TObjectPtr<UInputMappingContext> DebugInputMappingContext = nullptr;
 };

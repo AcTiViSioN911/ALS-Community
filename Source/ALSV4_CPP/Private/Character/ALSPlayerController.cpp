@@ -63,6 +63,7 @@ void AALSPlayerController::SetupInputComponent()
 		EnhancedInputComponent->ClearDebugKeyBindings();
 
 		BindActions(DefaultInputMappingContext);
+		BindActions(GamepadInputMappingContext);
 		BindActions(DebugInputMappingContext);
 	}
 	else
@@ -102,6 +103,7 @@ void AALSPlayerController::SetupInputs()
 			FModifyContextOptions Options;
 			Options.bForceImmediately = 1;
 			Subsystem->AddMappingContext(DefaultInputMappingContext, 1, Options);
+			Subsystem->AddMappingContext(GamepadInputMappingContext, 2, Options);
 			UALSDebugComponent* DebugComp = Cast<UALSDebugComponent>(PossessedCharacter->GetComponentByClass(UALSDebugComponent::StaticClass()));
 			if (DebugComp)
 			{
