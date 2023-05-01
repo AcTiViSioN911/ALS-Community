@@ -8,11 +8,45 @@ public class ALSV4_CPP : ModuleRules
 	public ALSV4_CPP(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
+			
 		PublicDependencyModuleNames.AddRange(new[]
-			{"Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "AIModule", "GameplayTasks","PhysicsCore", "Niagara", "EnhancedInput"
-			});
+			{
+				"GameplayAbilities",
+				"GameplayTags",
+				"GameplayTasks",
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"NavigationSystem",
+				"AIModule",
+				"ModularGameplay",
+				"ModularGameplayActors",
+				"GameplayTasks",
+				"GameFeatures",
+				"PhysicsCore",
+				"Niagara", 
+				"CommonLoadingScreen",
+				"EnhancedInput"
+			}
+		);
 
-		PrivateDependencyModuleNames.AddRange(new[] {"Slate", "SlateCore"});
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"InputCore",
+				"AudioMixer",
+				"AudioModulation",
+				"EnhancedInput",
+				"NetCore",
+				"CommonInput",
+				"CommonGame",
+				"CommonUser",
+				"CommonUI",
+				"GameplayMessageRuntime",
+				"Slate",
+				"SlateCore"
+			}
+		);
 	}
 }

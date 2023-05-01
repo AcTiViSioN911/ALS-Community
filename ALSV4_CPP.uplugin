@@ -9,7 +9,7 @@
 	"CreatedByURL": "https://github.com/dyanikoglu",
 	"DocsURL": "https://github.com/dyanikoglu/ALS-Community",
 	"SupportURL": "https://github.com/dyanikoglu/ALS-Community/issues",
-	"EngineVersion": "5.1",
+	"EngineAssociation": "5.1",
 	"EnabledByDefault": true,
 	"CanContainContent": true,
 	"IsBetaVersion": false,
@@ -24,6 +24,7 @@
 				"Engine",
 				"AIModule",
 				"GameplayTasks",
+				"GameplayAbilities",
 				"PhysicsCore"
 			]
 		}
@@ -35,6 +36,42 @@
 		},
 		{
 			"Name": "EnhancedInput",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayMessageRouter",
+			"Enabled": true
+		},
+		{
+			"Name": "GameFeatures",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonLoadingScreen",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonUser",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonGame",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "ModularGameplayActors",
 			"Enabled": true
 		}
 	]
