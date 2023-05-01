@@ -11,6 +11,7 @@
 #include "ALSCharacterAnimInstance.generated.h"
 
 // forward declarations
+class UAbilitySystemComponent;
 class UALSDebugComponent;
 class AALSBaseCharacter;
 class UCurveFloat;
@@ -27,6 +28,8 @@ class ALSV4_CPP_API UALSCharacterAnimInstance : public UAnimInstance
 
 public:
 	virtual void NativeInitializeAnimation() override;
+
+	virtual void InitializeWithAbilitySystem(UAbilitySystemComponent* ASC);
 
 	virtual void NativeBeginPlay() override;
 

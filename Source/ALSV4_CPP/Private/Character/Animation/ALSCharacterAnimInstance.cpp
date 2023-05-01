@@ -51,6 +51,11 @@ void UALSCharacterAnimInstance::NativeInitializeAnimation()
 	}
 }
 
+void UALSCharacterAnimInstance::InitializeWithAbilitySystem(UAbilitySystemComponent* ASC)
+{
+	// TODO: Implement this
+}
+
 void UALSCharacterAnimInstance::NativeBeginPlay()
 {
 	// it seems to be that the player pawn components are not really initialized
